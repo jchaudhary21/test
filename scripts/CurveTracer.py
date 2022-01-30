@@ -50,16 +50,23 @@ class CurveTracer:
          ls  = self.vector(dest_x,dest_y)
          bot_theta_error = ls[2]
          bot_position_error = ls[3]
+         print("************************")
+         print("*******BOT INFO*********")
+         print("************************")
          rospy.loginfo("bot vector --->" + str(ls[0]))
          rospy.loginfo("position vector --->" + str(ls[1]))
          rospy.loginfo("theta error: ---> " + str(ls[2]))
          rospy.loginfo("position error: ---> " + str(ls[3]))
          rospy.loginfo("current position is :---->" + str(ls[4]) + " " + str(ls[5]) ) 
+         rospy.loginfo("going to ---> " +str(dest_x) +" "+ str(dest_y)) 
         
         
          while((np.abs(bot_theta_error) > self.theta_precision) or (np.abs(bot_position_error) > self.dist_precision)):
               
               while (np.abs(bot_theta_error) > self.theta_precision) :  
+                print("************************")
+                print("***** FIXING YAW *******")
+                print("************************")
                 ls  = self.vector(dest_x,dest_y)
                 bot_theta_error = ls[2]
                 bot_position_error = ls[3]
@@ -68,7 +75,8 @@ class CurveTracer:
                 rospy.loginfo("theta error: ---> " + str(ls[2]))
                 rospy.loginfo("position error: ---> " + str(ls[3]))
                 rospy.loginfo("current position is :---->" + str(ls[4]) + " " + str(ls[5])) 
-                self.fix_error(0,bot_theta_error) 
+                rospy.loginfo("going to ---> " + str(dest_x) +" "+ str(dest_y)) 
+                self.fix_error(0, bot_theta_error) 
                 
                 
                             
@@ -76,7 +84,9 @@ class CurveTracer:
               rospy.loginfo("we have to reach: " + str(dest_x) + " " + str(dest_y))
               
               while (np.abs(bot_position_error) > self.dist_precision):
-                       rospy.loginfo("Moving Straight")                                             
+                       print("************************")
+                       print("*** Moving Straight ****")
+                       print("************************")                                                               
                        ls  = self.vector(dest_x,dest_y)
                        bot_theta_error = ls[2]
                        bot_position_error = ls[3]
@@ -85,32 +95,33 @@ class CurveTracer:
                        rospy.loginfo("theta error: ---> " + str(ls[2]))
                        rospy.loginfo("position error: ---> " + str(ls[3]))
                        rospy.loginfo("current position is :---->" + str(ls[4]) + " " + str(ls[5]))
-                       self.fix_error(bot_position_error,0)   
+                       rospy.loginfo("going to ---> " +str(dest_x) +" "+ str(dest_y)) 
+                       self.fix_error(bot_position_error ,0)   
                        
                        
                        while (np.abs(bot_theta_error) > self.theta_precision) : 
-                          ls  = self.vector(dest_x,dest_y)
-                          bot_theta_error = ls[2]
-                          bot_position_error = ls[3]
+                          print("*******************************")
+                          print("*FIXING YAW && MOVING STRAIGHT*")
+                          print("*******************************")                          
                           rospy.loginfo("bot vector --->" + str(ls[0]))
                           rospy.loginfo("position vector --->" + str(ls[1]))
                           rospy.loginfo("theta error: ---> " + str(ls[2]))
                           rospy.loginfo("position error: ---> " + str(ls[3]))
                           rospy.loginfo("current position is :---->" + str(ls[4]) + " " + str(ls[5]))
+                          rospy.loginfo("going to ---> " +str(dest_x) +" "+ str(dest_y)) 
                           self.fix_error(0,bot_theta_error) 
+                          ls  = self.vector(dest_x,dest_y)
+                          bot_theta_error = ls[2]
+                          bot_position_error = ls[3]
 
-                       ls  = self.vector(dest_x,dest_y)
-                       bot_theta_error = ls[2]
-                       bot_position_error = ls[3]
-                       rospy.loginfo("bot vector --->" + str(ls[0]))
-                       rospy.loginfo("position vector --->" + str(ls[1]))
-                       rospy.loginfo("theta error: ---> " + str(ls[2]))
-                       rospy.loginfo("position error: ---> " + str(ls[3]))
-                       rospy.loginfo("current position is :---->" + str(ls[4]) + " " + str(ls[5]))
+                  
                     
-                       if bot_position_error < self.dist_precision and bot_theta_error < self.theta_precision :
-                           rospy.loginfo("point GOAL REACHED")
-                           self.state = Bot_State.Goal_Reached.value    
+         if bot_position_error < self.dist_precision and bot_theta_error < self.theta_precision :
+                  print("*****************************")
+                  print("**HURRAY !! GOAL REACHED*****")
+                  print("*****************************")                      
+                  self.state = Bot_State.Goal_Reached.value 
+                  self.move(0,0)   
                               
               
               
@@ -132,12 +143,9 @@ class CurveTracer:
             # moving in straight line
             self.move(self.P*linear_error, 0)
             
-        if orien_error != 0:
-     
-            # fixing the yaw
-           
-            
-            self.move(0,self.P*-1*orien_error)
+        if orien_error != 0:           
+            # fixing the yaw     
+             self.move(0,self.P*-1*orien_error)
            
             
     
@@ -146,6 +154,7 @@ class CurveTracer:
     def vector(self,dest_x,dest_y):
     
          bot_theta = self.odom.get_orientation("euler")["yaw"]      # bot making angle with x axis 
+         bot_theta2 = self.odom.get_orientation("quaternion")
          bot_x_coordinate = round(self.odom.get_position()["x"], 2) # current x coordinate of bot
          bot_y_coordinate = round(self.odom.get_position()["y"],2)  # current y cordinate of bot
          bot_array = [np.cos(bot_theta),np.sin(bot_theta)]
@@ -153,12 +162,12 @@ class CurveTracer:
          reach_point_array = [dest_x - bot_x_coordinate , dest_y - bot_y_coordinate ]
          reach_point_vector = np.array(reach_point_array)
          dot_product = reach_point_vector.dot(bot_vector)
-         bot_theta_error = dot_product/(np.sqrt((dest_x - bot_x_coordinate)**2+(dest_y - bot_y_coordinate)**2))
+         bot_theta_error = np.arccos(dot_product/(np.sqrt((dest_x - bot_x_coordinate)**2+(dest_y - bot_y_coordinate)**2)))
          bot_position_error = np.sqrt((dest_x - bot_x_coordinate)**2+(dest_y - bot_y_coordinate)**2)
          if np.cos(bot_theta)*(dest_y - bot_y_coordinate) -  np.sin(bot_theta)*(dest_x - bot_x_coordinate) > 0 :
-            bot_theta = -bot_theta 
+            bot_theta_error = - bot_theta_error 
             
-         return [bot_vector,reach_point_vector,bot_theta_error, bot_position_error,bot_x_coordinate,bot_y_coordinate]
+         return [bot_vector,reach_point_vector,bot_theta_error, bot_position_error,bot_x_coordinate,bot_y_coordinate,bot_theta]
          
                    
                   
@@ -169,5 +178,5 @@ class CurveTracer:
               
 # -------------------------------------------------------CLASS CALLING -------------------------------------------------------------- #
 curve = CurveTracer()
-curve.goto(0,3)
-rospy.spin()
+curve.goto(1,5)
+#rospy.sleep(1)

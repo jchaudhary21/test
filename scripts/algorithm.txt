@@ -1,5 +1,0 @@
-initial point 
-angle with x axis
-define vector - cos x i + sin x j
-next point to move 
-theta to turn 
