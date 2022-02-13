@@ -28,7 +28,7 @@ class Object_Avoider:
             2: 'follow the wall',
         }
         self.message = Twist()
-        self.d = 0.5
+        self.d = 1.0
        
         self.pub_ = rospy.Publisher('/cmd_vel', Twist, queue_size=1)        
         self.sub = rospy.Subscriber('/laser/scan', LaserScan, self.clbk_laser)
