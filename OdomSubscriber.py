@@ -18,11 +18,20 @@ class OdomSubscriber():
          self.odom_data = msg
       
      def get_position(self):
-         odom_position = {"x" :self.odom_data.pose.pose.position.x, "y" :self.odom_data.pose.pose.position.y, "z" :self.odom_data.pose.pose.position.z}
+         odom_position = {
+                            "x" :self.odom_data.pose.pose.position.x, 
+                            "y" :self.odom_data.pose.pose.position.y, 
+                            "z" :self.odom_data.pose.pose.position.z
+                            }
          return (odom_position)
          
      def get_orientation(self,orientation_choice='quaternion'):
-         odom_orientation_quaternion= { "x" :self.odom_data.pose.pose.orientation.x , "y" :self.odom_data.pose.pose.orientation.y, "z" :   self.odom_data.pose.pose.orientation.z, "w" :self.odom_data.pose.pose.orientation.w,}
+         odom_orientation_quaternion= { 
+                                        "x" :self.odom_data.pose.pose.orientation.x , 
+                                        "y" :self.odom_data.pose.pose.orientation.y, 
+                                        "z" :self.odom_data.pose.pose.orientation.z, 
+                                        "w" :self.odom_data.pose.pose.orientation.w,
+                                        }
          x  = self.odom_data.pose.pose.orientation.x;
          y  = self.odom_data.pose.pose.orientation.y;
          z  = self.odom_data.pose.pose.orientation.z;
@@ -30,7 +39,11 @@ class OdomSubscriber():
 
          orientation_list =  [x,y,z,w]
          (roll, pitch, yaw) = euler_from_quaternion (orientation_list)
-         odom_orientation_euler = {'roll':roll,'pitch':pitch,'yaw':yaw}
+         odom_orientation_euler = {
+                                    'roll':roll,
+                                    'pitch':pitch,
+                                    'yaw':yaw
+                                    }
          if orientation_choice.lower() == 'euler':
             return odom_orientation_euler
          else :
